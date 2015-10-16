@@ -1,5 +1,6 @@
 require_relative 'db_connection'
 require 'active_support/inflector'
+require 'byebug'
 # NB: the attr_accessor we wrote in phase 0 is NOT used in the rest
 # of this project. It was only a warm up.
 
@@ -10,7 +11,7 @@ class SQLObject
   SELECT
     *
   FROM
-    cats
+    #{table_name}
 SQL
     columns[0].map(&:to_sym)
     # ...
@@ -58,16 +59,11 @@ SQL
 
   def self.parse_all(results)
     # ...
-    arr = []
+
     results.map do |hash|
-      p hash.inspect
-      cat = self.new
-      hash.each do |k,v|
-        cat.send("#{k}=".to_sym, v)
-      end
-      arr << cat
+      self.new(hash)
     end
-    p arr
+
   end
 
   def self.find(id)
@@ -92,7 +88,8 @@ SQL
     # ...
     params.each do |k,v|
       # symb = k.to_sym
-      raise "unknown attribute '#{k}'" unless self.class.columns.include?(k)
+      # byebug
+      raise "unknown attribute '#{k}'" unless self.class.columns.include?(k.to_sym)
 
       self.send("#{k}=".to_sym, v)
     end
@@ -105,7 +102,11 @@ SQL
 
   def attribute_values
     # ...
-    @attributes.values
+    attr_values = {}
+    self.class.columns.map do |column|
+      attr_values[column] = self.send(column)
+    end
+    attr_values.values
 
   end
 
@@ -117,8 +118,7 @@ SQL
     col_names = self.class.columns[1..-1]
     n = col_names.length
     col_names = col_names.join(", ")
-    question_marks = (["?"] * n)
-    question_marks = question_marks.join(", ")
+    question_marks = (["?"] * n).join(", ")
     atribs = attribute_values[1..-1]
 
     results = DBConnection.execute(<<-SQL, *atribs)
@@ -129,10 +129,31 @@ SQL
 
   SQL
 
+  self.id = DBConnection.last_insert_row_id
+
   end
+
+
 
   def update
     # ...
+    col_names = self.class.columns[1..-1]
+    n = col_names.length
+    col_names = col_names.join("?, ")
+    p col_names
+    question_marks = (["?"] * n).join(", ")
+    atribs = attribute_values[1..-1]
+
+    results = DBConnection.execute(<<-SQL, *atribs)
+    UPDATE
+      #{self.class.table_name}
+    SET
+      col_names
+    WHERE
+      id = ?
+
+  SQL
+
   end
 
   def save
