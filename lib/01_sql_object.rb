@@ -4,6 +4,8 @@ require 'active_support/inflector'
 # of this project. It was only a warm up.
 
 class SQLObject
+
+  attr_accessor :table_name
   def self.columns
     # ...
   end
@@ -13,10 +15,15 @@ class SQLObject
 
   def self.table_name=(table_name)
     # ...
+    @table_name = table_name
   end
 
   def self.table_name
     # ...
+    # @table_name
+
+    @table_name ||= self.to_s.tableize
+
   end
 
   def self.all
@@ -33,6 +40,7 @@ class SQLObject
 
   def initialize(params = {})
     # ...
+    @table_name = "cats"
   end
 
   def attributes
