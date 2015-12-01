@@ -139,18 +139,17 @@ SQL
     # ...
     col_names = self.class.columns[1..-1]
     n = col_names.length
-    col_names = col_names.join("?, ")
-    p col_names
-    question_marks = (["?"] * n).join(", ")
-    atribs = attribute_values[1..-1]
+    set_line = self.class.columns
+      .map { |attr| "#{attr} = ?" }.join(", ")
+    atribs = attribute_values
 
-    results = DBConnection.execute(<<-SQL, *atribs)
+    results = DBConnection.execute(<<-SQL, *atribs, id)
     UPDATE
       #{self.class.table_name}
     SET
-      col_names
+      #{set_line}
     WHERE
-      id = ?
+      #{self.class.table_name}.id = ?
 
   SQL
 
@@ -158,5 +157,10 @@ SQL
 
   def save
     # ...
+    if self.id.nil?
+      insert
+    else
+      update
+    end
   end
 end
