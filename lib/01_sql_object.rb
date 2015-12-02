@@ -139,7 +139,7 @@ SQL
     # ...
     col_names = self.class.columns[1..-1]
     n = col_names.length
-    set_line = self.class.columns
+    sets = self.class.columns
       .map { |attr| "#{attr} = ?" }.join(", ")
     atribs = attribute_values
 
@@ -147,7 +147,7 @@ SQL
     UPDATE
       #{self.class.table_name}
     SET
-      #{set_line}
+      #{sets}
     WHERE
       #{self.class.table_name}.id = ?
 
