@@ -111,10 +111,6 @@ SQL
   end
 
   def insert
-    # ...
-    # p columns.inspect
-    # p columns.inspect
-    # p columns.inspect
     col_names = self.class.columns[1..-1]
     n = col_names.length
     col_names = col_names.join(", ")
@@ -136,7 +132,6 @@ SQL
 
 
   def update
-    # ...
     col_names = self.class.columns[1..-1]
     n = col_names.length
     sets = self.class.columns
@@ -156,7 +151,6 @@ SQL
   end
 
   def save
-    # ...
     if self.id.nil?
       insert
     else
